@@ -1,6 +1,6 @@
 return {
 	"nvim-lualine/lualine.nvim",
-	dpeendencies = { "nvim-tree/nvim-web-devicons" },
+	dependencies = { "nvim-tree/nvim-web-devicons" }, -- Fixed typo here
 	config = function()
 		local lualine = require("lualine")
 		local lazy_status = require("lazy.status")
@@ -43,9 +43,9 @@ return {
 				c = { bg = colors.bg, fg = colors.fg },
 			},
 			inactive = {
-				a = { bg = colors.inactive_bg, fg = colors.semilightgray, gui = "bold" },
-				b = { bg = colors.inactive_bg, fg = colors.semilightgray },
-				c = { bg = colors.inactive_bg, fg = colors.semilightgray },
+				a = { bg = colors.inactive_bg, fg = colors.fg, gui = "bold" }, -- fixed fg color ref
+				b = { bg = colors.inactive_bg, fg = colors.fg },
+				c = { bg = colors.inactive_bg, fg = colors.fg },
 			},
 		}
 
@@ -56,19 +56,24 @@ return {
 			},
 			sections = {
 				lualine_c = {
-					-- ...other lualine components
-					{
-						require("tmux-status").tmux_windows,
-						cond = require("tmux-status").show,
-						padding = { left = 3 },
-					},
+					-- Kept empty or add your filename component here if needed
+					{ "filename" },
 				},
 				lualine_z = {
-					-- ...other lualine components
 					{
-						require("tmux-status").tmux_session,
-						cond = require("tmux-status").show,
-						padding = { left = 3 },
+						-- ZELLIJ SESSION COMPONENT
+						function()
+							local name = os.getenv("ZELLIJ_SESSION_NAME")
+							if name then
+								return " " .. name -- Adds a small icon
+							else
+								return ""
+							end
+						end,
+						cond = function()
+							return os.getenv("ZELLIJ") ~= nil
+						end,
+						padding = { left = 1, right = 1 },
 					},
 				},
 				lualine_x = {
