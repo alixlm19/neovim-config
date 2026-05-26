@@ -1,4 +1,3 @@
-
 return {
 	"neovim/nvim-lspconfig",
 	event = { "BufReadPre", "BufNewFile" },
@@ -54,7 +53,12 @@ return {
 				keymap.set("n", "K", vim.lsp.buf.hover, opts)
 
 				opts.desc = "Restart LSP"
-				keymap.set("n", "<leader>rs", ":LspRestart<CR>", opts)
+				keymap.set("n", "<leader>rs", function()
+					for _, client in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
+						client:stop()
+					end
+					vim.defer_fn(function() vim.cmd("edit") end, 500)
+				end, opts)
 			end,
 		})
 
@@ -123,4 +127,3 @@ return {
 		})
 	end,
 }
-
