@@ -1,4 +1,5 @@
 return {
+<<<<<<< HEAD
   {
     "olimorris/onedarkpro.nvim",
     priority = 1000, -- Ensure it loads first,
@@ -8,3 +9,11 @@ return {
     end,
   },
 } 
+=======
+	"cocopon/iceberg.vim",
+	priority = 1000,
+	config = function()
+		vim.cmd("colorscheme iceberg")
+	end,
+}
+>>>>>>> windows
