@@ -110,7 +110,6 @@ return {
     { "<c-_>", function() Snacks.terminal.toggle() end, desc = "Toggle Terminal", mode = { "n", "t" } },
     { "]]", function() Snacks.words.jump(vim.v.count1) end,  desc = "Next Reference", mode = { "n", "t" } },
     { "[[", function() Snacks.words.jump(-vim.v.count1) end, desc = "Prev Reference", mode = { "n", "t" } },
-	{ "<Esc><Esc>", function() Snacks.terminal.toggle() end, desc = "Close Terminal", mode = "t" },
     {
       "<leader>N",
       desc = "Neovim News",

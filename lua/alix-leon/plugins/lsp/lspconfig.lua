@@ -1,15 +1,15 @@
+
 return {
 	"neovim/nvim-lspconfig",
 	event = { "BufReadPre", "BufNewFile" },
 	dependencies = {
-		"hrsh7th/cmp-nvim-lsp",
+		{ "saghen/blink.cmp" },
 		{ "antosha417/nvim-lsp-file-operations", config = true },
 		{ "folke/neodev.nvim", opts = {} },
 	},
 	config = function()
 		local lspconfig = require("lspconfig")
 		local mason_lspconfig = require("mason-lspconfig")
-		local cmp_nvim_lsp = require("cmp_nvim_lsp")
 		local keymap = vim.keymap
 
 		vim.api.nvim_create_autocmd("LspAttach", {
@@ -58,7 +58,11 @@ return {
 			end,
 		})
 
-		local capabilities = cmp_nvim_lsp.default_capabilities()
+		local capabilities = require("blink.cmp").get_lsp_capabilities()
+		capabilities.positionEncodings = { "utf-16" }
+
+		-- suppress noisy unknown filetype warnings from tailwindcss/emmet
+		vim.lsp.log.set_level(vim.log.levels.ERROR)
 
 		local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
 		for type, icon in pairs(signs) do
@@ -94,16 +98,24 @@ return {
 				})
 			end,
 			["pyright"] = function()
-				local venv_path = vim.fn.getcwd() .. "/.venv/bin/python"
-				local python_path = vim.fn.filereadable(venv_path) == 1
-					and venv_path
-					or vim.fn.exepath("python3")
+				local venv = os.getenv("VIRTUAL_ENV")
+				local python_path = venv and (venv .. "/bin/python")
+					or (vim.fn.getcwd() .. "/.venv/bin/python")
+
+				if vim.fn.filereadable(python_path) == 0 then
+					python_path = vim.fn.exepath("python3")
+				end
 
 				lspconfig["pyright"].setup({
 					capabilities = capabilities,
 					settings = {
 						python = {
 							pythonPath = python_path,
+							analysis = {
+								autoSearchPaths = true,
+								useLibraryCodeForTypes = true,
+								diagnosticMode = "openFilesOnly",
+							},
 						},
 					},
 				})
@@ -111,3 +123,4 @@ return {
 		})
 	end,
 }
+
