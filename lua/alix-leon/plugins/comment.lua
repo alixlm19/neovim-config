@@ -1,9 +1,4 @@
 return {
-<<<<<<< HEAD
-  "numToStr/Comment.nvim",
-  event = { "BufReadPre", "BufNewFile" },
-  config = true -- runs require('Comment').setup()
-=======
 	"numToStr/Comment.nvim",
 	event = { "BufReadPre", "BufNewfile", },
 	dependencies = {
@@ -21,5 +16,4 @@ return {
 			pre_hook = ts_context_commentstring.create_pre_hook(),
 		})
 	end,
->>>>>>> windows
 }

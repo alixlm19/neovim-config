@@ -1,22 +1,4 @@
 return {
-<<<<<<< HEAD
-    'nvim-telescope/telescope.nvim',
-    cmd = "Telescope",
-    version = false,
-    tag = '0.1.5',
-    dependencies = { 'nvim-lua/plenary.nvim' },
-    opts = {
-        extensions = {
-
-            fzf = {
-                fuzzy = true,
-                override_generic_sorter = true,
-                override_file_sorter = true,
-                case_mode = "smart_case"
-            }
-        }
-    }
-=======
 	"nvim-telescope/telescope.nvim",
 	branch = "0.1.x",
 	dependencies = {
@@ -54,5 +36,4 @@ return {
 		keymap.set("n", "<leader>fc", "<cmd>Telescope grep_string<cr>", { desc = "Find string under cursor in cwd" })
 		keymap.set("n", "<leader>ft", "<cmd>TodoTelescope<cr>", { desc = "Find todos" })
 	end,
->>>>>>> windows
 }
