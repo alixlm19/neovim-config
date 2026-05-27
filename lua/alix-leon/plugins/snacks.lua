@@ -21,11 +21,6 @@ return {
     words = { enabled = true },
     terminal = {
       enabled = true,
-      win = {
-        keys = {
-          term_escape = { "<Esc><Esc>", "<cmd>close<cr>", mode = "t" },
-        },
-      },
     },
     styles = {
       notification = {},
