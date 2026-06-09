@@ -57,6 +57,37 @@ return {
 					end
 					vim.defer_fn(function() vim.cmd("edit") end, 500)
 				end, opts)
+
+				-- On save, organize imports then format with ruff. Both are scoped
+				-- to the ruff client so pyright (no formatter) is never asked.
+				-- We use source.organizeImports (isort) which sorts/groups imports
+				-- but does NOT remove unused ones — that's source.fixAll (F401),
+				-- which we deliberately omit.
+				local client = vim.lsp.get_client_by_id(ev.data.client_id)
+				if client and client.name == "ruff" then
+					vim.api.nvim_create_autocmd("BufWritePre", {
+						group = vim.api.nvim_create_augroup("RuffFormat", { clear = false }),
+						buffer = ev.buf,
+						callback = function()
+							-- Organize imports synchronously so the edits land before
+							-- we format. code_action() is async, so we drive the request
+							-- ourselves and apply the resulting workspace edit inline.
+							local params = vim.lsp.util.make_range_params(0, client.offset_encoding)
+							params.context = { only = { "source.organizeImports.ruff" }, diagnostics = {} }
+							local result = client:request_sync("textDocument/codeAction", params, 1000, ev.buf)
+							for _, action in ipairs((result or {}).result or {}) do
+								if action.edit then
+									vim.lsp.util.apply_workspace_edit(action.edit, client.offset_encoding)
+								end
+							end
+
+							vim.lsp.buf.format({
+								bufnr = ev.buf,
+								filter = function(c) return c.name == "ruff" end,
+							})
+						end,
+					})
+				end
 			end,
 		})
 
