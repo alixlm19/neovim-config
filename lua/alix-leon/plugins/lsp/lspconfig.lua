@@ -102,19 +102,19 @@ return {
 				})
 			end,
 			["pyright"] = function()
-				local venv = os.getenv("VIRTUAL_ENV")
-				local python_path = venv and (venv .. "/bin/python")
-					or (vim.fn.getcwd() .. "/.venv/bin/python")
-
-				if vim.fn.filereadable(python_path) == 0 then
-					python_path = vim.fn.exepath("python3")
-				end
+				local venv = require("alix-leon.core.venv")
 
 				lspconfig["pyright"].setup({
 					capabilities = capabilities,
+					-- Runs per project root, so each Python project gets its own
+					-- venv resolved automatically (walks up for monorepo layouts).
+					on_new_config = function(new_config, root_dir)
+						new_config.settings = new_config.settings or {}
+						new_config.settings.python = new_config.settings.python or {}
+						new_config.settings.python.pythonPath = venv.detect(root_dir)
+					end,
 					settings = {
 						python = {
-							pythonPath = python_path,
 							analysis = {
 								autoSearchPaths = true,
 								useLibraryCodeForTypes = true,
@@ -122,6 +122,22 @@ return {
 							},
 						},
 					},
+				})
+
+				-- Manual override: fuzzy-pick any venv under the cwd.
+				keymap.set("n", "<leader>cv", venv.pick, { desc = "Select Python venv" })
+			end,
+			["ruff"] = function()
+				local venv = require("alix-leon.core.venv")
+
+				lspconfig["ruff"].setup({
+					capabilities = capabilities,
+					-- Match pyright's interpreter so import resolution agrees.
+					on_new_config = function(new_config, root_dir)
+						new_config.init_options = new_config.init_options or {}
+						new_config.init_options.settings = new_config.init_options.settings or {}
+						new_config.init_options.settings.interpreter = { venv.detect(root_dir) }
+					end,
 				})
 			end,
 		})

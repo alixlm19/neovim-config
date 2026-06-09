@@ -78,6 +78,18 @@ return {
 				},
 				lualine_x = {
 					{
+						-- ACTIVE PYTHON VENV
+						function()
+							local name = require("alix-leon.core.venv").name()
+							return name and ("  " .. name) or ""
+						end,
+						cond = function()
+							return vim.bo.filetype == "python"
+								and require("alix-leon.core.venv").name() ~= nil
+						end,
+						color = { fg = colors.yellow },
+					},
+					{
 						lazy_status.updates,
 						cond = lazy_status.has_updates,
 						color = { fg = "#FF9E64" },
