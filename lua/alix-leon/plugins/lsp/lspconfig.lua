@@ -7,8 +7,6 @@ return {
 		{ "folke/neodev.nvim", opts = {} },
 	},
 	config = function()
-		local lspconfig = require("lspconfig")
-		local mason_lspconfig = require("mason-lspconfig")
 		local keymap = vim.keymap
 
 		vim.api.nvim_create_autocmd("LspAttach", {
@@ -80,66 +78,56 @@ return {
 			})
 		end
 
-		mason_lspconfig.setup({
-			function(server_name)
-				lspconfig[server_name].setup({
-					capabilities = capabilities,
-				})
-			end,
-			["lua_ls"] = function()
-				lspconfig["lua_ls"].setup({
-					capabilities = capabilities,
-					settings = {
-						Lua = {
-							diagnostics = {
-								globals = { "vim", "Snacks" },
-							},
-							completion = {
-								callSnippet = "Replace",
-							},
-						},
+		-- mason-lspconfig v2 dropped setup_handlers; on Neovim 0.11+ servers are
+		-- configured with vim.lsp.config() and enabled by v2's automatic_enable.
+		local venv = require("alix-leon.core.venv")
+
+		-- Applied to every server.
+		vim.lsp.config("*", { capabilities = capabilities })
+
+		vim.lsp.config("lua_ls", {
+			settings = {
+				Lua = {
+					diagnostics = {
+						globals = { "vim", "Snacks" },
 					},
-				})
-			end,
-			["pyright"] = function()
-				local venv = require("alix-leon.core.venv")
-
-				lspconfig["pyright"].setup({
-					capabilities = capabilities,
-					-- Runs per project root, so each Python project gets its own
-					-- venv resolved automatically (walks up for monorepo layouts).
-					on_new_config = function(new_config, root_dir)
-						new_config.settings = new_config.settings or {}
-						new_config.settings.python = new_config.settings.python or {}
-						new_config.settings.python.pythonPath = venv.detect(root_dir)
-					end,
-					settings = {
-						python = {
-							analysis = {
-								autoSearchPaths = true,
-								useLibraryCodeForTypes = true,
-								diagnosticMode = "openFilesOnly",
-							},
-						},
+					completion = {
+						callSnippet = "Replace",
 					},
-				})
+				},
+			},
+		})
 
-				-- Manual override: fuzzy-pick any venv under the cwd.
-				keymap.set("n", "<leader>cv", venv.pick, { desc = "Select Python venv" })
+		vim.lsp.config("pyright", {
+			-- Resolved per project root, so each Python project gets its own
+			-- venv automatically (walks up for monorepo layouts). root_dir is
+			-- populated on the config by the time before_init runs.
+			before_init = function(_, config)
+				config.settings = config.settings or {}
+				config.settings.python = config.settings.python or {}
+				config.settings.python.pythonPath = venv.detect(config.root_dir)
 			end,
-			["ruff"] = function()
-				local venv = require("alix-leon.core.venv")
+			settings = {
+				python = {
+					analysis = {
+						autoSearchPaths = true,
+						useLibraryCodeForTypes = true,
+						diagnosticMode = "openFilesOnly",
+					},
+				},
+			},
+		})
 
-				lspconfig["ruff"].setup({
-					capabilities = capabilities,
-					-- Match pyright's interpreter so import resolution agrees.
-					on_new_config = function(new_config, root_dir)
-						new_config.init_options = new_config.init_options or {}
-						new_config.init_options.settings = new_config.init_options.settings or {}
-						new_config.init_options.settings.interpreter = { venv.detect(root_dir) }
-					end,
-				})
+		vim.lsp.config("ruff", {
+			-- Match pyright's interpreter so import resolution agrees.
+			before_init = function(_, config)
+				config.init_options = config.init_options or {}
+				config.init_options.settings = config.init_options.settings or {}
+				config.init_options.settings.interpreter = { venv.detect(config.root_dir) }
 			end,
 		})
+
+		-- Manual override: fuzzy-pick any venv under the cwd.
+		keymap.set("n", "<leader>cv", venv.pick, { desc = "Select Python venv" })
 	end,
 }
