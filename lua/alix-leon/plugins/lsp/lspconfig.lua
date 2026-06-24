@@ -55,7 +55,17 @@ return {
 					for _, client in ipairs(vim.lsp.get_clients({ bufnr = 0 })) do
 						client:stop()
 					end
-					vim.defer_fn(function() vim.cmd("edit") end, 500)
+					-- Re-attach once the clients have stopped. `:edit` reloads the
+					-- buffer to re-trigger attachment, but it errors (E37) on a
+					-- modified buffer — fall back to LspStart there so unsaved
+					-- changes survive.
+					vim.defer_fn(function()
+						if vim.bo.modified then
+							vim.cmd("LspStart")
+						else
+							vim.cmd("edit")
+						end
+					end, 500)
 				end, opts)
 
 				-- On save, organize imports then format with ruff. Both are scoped
