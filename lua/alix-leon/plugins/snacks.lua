@@ -136,6 +136,7 @@ return {
         end
 
         if vim.fn.has("nvim-0.11") == 1 then
+          ---@diagnostic disable-next-line: duplicate-set-field
           vim._print = function(_, ...)
             dd(...)
           end
