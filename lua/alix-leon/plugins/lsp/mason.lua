@@ -26,6 +26,7 @@ return {
 		mason_lspconfig.setup({
 			-- List of servers for mason to install
 			ensure_installed = {
+				"pyright",
 				"ruff",
 				"lua_ls",
 				"harper_ls",

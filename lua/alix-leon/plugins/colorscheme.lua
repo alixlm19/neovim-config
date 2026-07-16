@@ -1,7 +1,8 @@
 return {
-	"cocopon/iceberg.vim",
+	"catppuccin/nvim",
+	name="catppuccin",
 	priority = 1000,
 	config = function()
-		vim.cmd("colorscheme iceberg")
+		vim.cmd("colorscheme catppuccin-mocha")
 	end,
 }
