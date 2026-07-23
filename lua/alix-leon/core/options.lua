@@ -20,6 +20,8 @@ opt.cursorline = true
 
 -- turn on termguicolors for colorschemes to work
 opt.termguicolors = true
+-- Work around Ghostty 1.3.1 synchronized-output rendering corruption.
+opt.termsync = false
 opt.background = "dark" -- colorschemes that can be light or dark will be made dark
 opt.signcolumn = "yes" -- show sign column so that text doesn't shift
 
