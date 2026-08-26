@@ -40,11 +40,12 @@ return {
 				opts.desc = "Show line diagnostics"
 				keymap.set("n", "<leader>d", vim.diagnostic.open_float, opts)
 
+				-- goto_prev/goto_next are deprecated in favour of jump().
 				opts.desc = "Go to previous diagnostic"
-				keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
+				keymap.set("n", "[d", function() vim.diagnostic.jump({ count = -1, float = true }) end, opts)
 
 				opts.desc = "Go to next diagnostic"
-				keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
+				keymap.set("n", "]d", function() vim.diagnostic.jump({ count = 1, float = true }) end, opts)
 
 				opts.desc = "Show documentation for what is under cursor"
 				keymap.set("n", "K", vim.lsp.buf.hover, opts)
@@ -106,17 +107,20 @@ return {
 		-- suppress noisy unknown filetype warnings from tailwindcss/emmet
 		vim.lsp.log.set_level(vim.log.levels.ERROR)
 
-		local signs = { Error = " ", Warn = " ", Hint = "󰠠 ", Info = " " }
-		for type, icon in pairs(signs) do
-			local hl = "DiagnosticSign" .. type
-			vim.diagnostic.config({
-				signs = {
-					text = icon,
-					texthl = hl,
-					numhl = "",
+		-- signs.text is keyed by severity. Assigning a bare string (and calling
+		-- config() once per icon in a loop) collapsed all four severities onto
+		-- whichever icon pairs() happened to yield last, so the sign column
+		-- picked a random colour each session.
+		vim.diagnostic.config({
+			signs = {
+				text = {
+					[vim.diagnostic.severity.ERROR] = " ",
+					[vim.diagnostic.severity.WARN] = " ",
+					[vim.diagnostic.severity.HINT] = "󰠠 ",
+					[vim.diagnostic.severity.INFO] = " ",
 				},
-			})
-		end
+			},
+		})
 
 		-- mason-lspconfig v2 dropped setup_handlers; on Neovim 0.11+ servers are
 		-- configured with vim.lsp.config() and enabled by v2's automatic_enable.
@@ -136,6 +140,13 @@ return {
 					},
 				},
 			},
+		})
+
+		-- harper_ls is a prose grammar checker; by default it attaches to source
+		-- files too and flags identifiers in comments and strings. Keep it on
+		-- the filetypes where prose is actually the content.
+		vim.lsp.config("harper_ls", {
+			filetypes = { "markdown", "text", "gitcommit", "rst", "asciidoc" },
 		})
 
 		vim.lsp.config("pyright", {

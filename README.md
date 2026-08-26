@@ -3,7 +3,8 @@
 A personal Neovim setup built on [lazy.nvim](https://github.com/folke/lazy.nvim),
 [Mason](https://github.com/williamboman/mason.nvim) for LSP management, and
 [Snacks](https://github.com/folke/snacks.nvim) for the picker/explorer/UI layer.
-Tuned primarily for Python (pyright + ruff) and Lua development.
+Tuned for Python (pyright + ruff), TypeScript/React (ts_ls + eslint_d + prettier),
+and Lua development.
 
 This repository is meant to live at `~/.config/nvim`.
 
@@ -26,11 +27,17 @@ This repository is meant to live at `~/.config/nvim`.
 | `node` + `npm` | runtime for Mason-managed LSPs (pyright, eslint_d, prettier) |
 | `yarn` | builds `markdown-preview.nvim` |
 | `python3` | pyright/ruff interpreter resolution |
+| `tree-sitter` (CLI ≥ 0.26.1) | compiling nvim-treesitter parsers (`main` branch requirement) |
 | C compiler + `make` | building plugins with native components |
 
-LSP servers and formatters (`pyright`, `ruff`, `lua_ls`, `harper_ls`, `prettier`,
-`stylua`, `eslint_d`) are **not** installed by hand — Mason installs them
-automatically the first time you launch Neovim.
+LSP servers, formatters, and linters are **not** installed by hand — Mason
+installs them automatically the first time you launch Neovim:
+
+| Kind | Tools |
+| --- | --- |
+| Language servers | `pyright`, `ruff`, `lua_ls`, `harper_ls`, `ts_ls`, `html`, `cssls`, `tailwindcss`, `emmet_ls`, `prismals` |
+| Formatters (conform.nvim) | `prettier`, `stylua`, `taplo` (Python formats via the ruff LSP) |
+| Linters (nvim-lint) | `eslint_d` (js/ts/jsx/tsx, only inside an ESLint project) |
 
 ## Installation
 

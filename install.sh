@@ -5,8 +5,8 @@
 # Safe to re-run: every step checks for the tool before installing it.
 # Supports macOS (Homebrew) and Debian/Ubuntu Linux (apt).
 #
-# The Neovim plugins themselves — and the LSP servers/formatters managed by
-# Mason (pyright, ruff, lua_ls, harper_ls, prettier, stylua, eslint_d) — are
+# The Neovim plugins themselves — and the LSP servers, formatters, and linters
+# managed by Mason (see the table in README.md) — are
 # installed automatically the first time you launch `nvim`. This script only
 # installs the system-level runtimes and CLI tools those plugins rely on.
 
@@ -106,6 +106,7 @@ apt_install() {
 # node/npm : runtime for Mason-managed LSPs (pyright, eslint_d, prettier)
 # yarn     : builds markdown-preview.nvim
 # python3  : pyright/ruff interpreter resolution
+# tree-sitter : parser compilation for nvim-treesitter (main branch needs >= 0.26.1)
 # build    : C compiler + make for plugins that compile native bits
 
 if [ "$PKG" = "brew" ]; then
@@ -118,6 +119,7 @@ if [ "$PKG" = "brew" ]; then
   brew_install node
   brew_install yarn
   brew_install python3
+  brew_install tree-sitter
   # curl + make ship with macOS / Xcode CLT; ensure Xcode CLT is present.
   if ! xcode-select -p >/dev/null 2>&1; then
     info "Installing Xcode Command Line Tools (compiler + make)..."
@@ -180,6 +182,26 @@ elif [ "$PKG" = "apt" ]; then
     info "yarn already installed."
   fi
 
+  # tree-sitter CLI: nvim-treesitter's main branch requires >= 0.26.1, which is
+  # newer than what apt ships. Upstream explicitly warns against the npm build,
+  # so fetch the release binary.
+  if ! have tree-sitter || ! tree-sitter --version | grep -qE '0\.(2[6-9]|[3-9][0-9])'; then
+    info "Installing tree-sitter CLI..."
+    TS_ARCH="$(dpkg --print-architecture)"
+    case "$TS_ARCH" in
+      amd64) TS_ARCH="x64" ;;
+      arm64) TS_ARCH="arm64" ;;
+    esac
+    curl -fsSLo /tmp/tree-sitter.gz \
+      "https://github.com/tree-sitter/tree-sitter/releases/latest/download/tree-sitter-linux-${TS_ARCH}.gz"
+    gunzip -f /tmp/tree-sitter.gz
+    chmod +x /tmp/tree-sitter
+    sudo install /tmp/tree-sitter /usr/local/bin
+    rm -f /tmp/tree-sitter
+  else
+    info "tree-sitter CLI already installed."
+  fi
+
   # Debian names the fd binary `fdfind`; symlink it to `fd` for the venv picker.
   if have fdfind && ! have fd; then
     info "Symlinking fdfind -> fd..."
@@ -207,7 +229,7 @@ fi
 # ----------------------------------------------------------------------------
 info "Verifying installed tools..."
 MISSING=()
-for tool in nvim git rg fd lazygit gh node npm python3; do
+for tool in nvim git rg fd lazygit gh node npm python3 tree-sitter; do
   if have "$tool"; then
     printf '  %s✓%s %s\n' "$GREEN" "$RESET" "$tool"
   else
