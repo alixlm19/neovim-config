@@ -23,6 +23,13 @@ return {
 				lua = { "stylua" },
 				toml = { "taplo" },
 			},
+			formatters = {
+				taplo = {
+					-- -o is a `format` subcommand flag, so it must follow `format`;
+					-- prepend_args would place it before the subcommand.
+					args = { "format", "-o", "align_entries=true", "-" },
+				},
+			},
 			format_on_save = function(bufnr)
 				-- See the note above: ruff already owns Python on save, and an
 				-- lsp fallback here would re-run it a second time.
